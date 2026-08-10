@@ -1,4 +1,4 @@
-# Assignment brief — confidential, not for a public repo
+﻿# Assignment brief â€” confidential, not for a public repo
 some.pdf
 transactions (1).json
 
@@ -37,3 +37,5 @@ backend/data/rejected-rows.json
 
 # Local screenshot helper
 frontend/_shots.mjs
+frontend/_prodcheck.mjs
+

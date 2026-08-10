@@ -1,0 +1,32 @@
+# Render blueprint for the FastAPI backend.
+#
+# Render can pick this up automatically from the repo root, or the same values
+# can be entered by hand when creating the service.
+
+services:
+  - type: web
+    name: coinstack-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    # $PORT is assigned by Render; binding to a fixed port fails health checks.
+    # 0.0.0.0, not 127.0.0.1 — the loopback interface isn't reachable from
+    # outside the container.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      # Set in the Render dashboard, not here — it carries the Neon password.
+      # Use Neon's POOLED connection string: the free instance allows few direct
+      # connections, and a pool of web workers exhausts them quickly.
+      - key: DATABASE_URL
+        sync: false
+      # Comma-separated. Must include the deployed Vercel origin or the browser
+      # blocks every request from the frontend.
+      - key: CORS_ORIGINS
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.13.4"
+      # Free-tier instances are small; a large pool just wastes memory.
+      - key: POOL_MAX_SIZE
+        value: "5"

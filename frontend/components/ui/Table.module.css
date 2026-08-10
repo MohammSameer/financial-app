@@ -106,13 +106,31 @@
   opacity: 1;
 }
 
-/* Right-align numeric headers over their numeric columns. */
+/* Right-align numeric headers over their numeric columns.
+ *
+ * The `.thead th` qualifier is required, not stylistic. `.thead th` above sets
+ * text-align: left at specificity (0,1,1); a bare `.alignRight` is (0,1,0) and
+ * loses, so headers stayed left-aligned while the cells below them went right —
+ * a visible gap between "COINS" and the numbers under it. */
+.thead th.alignRight {
+  text-align: right;
+}
+
+/* Cells only need the plain class: `.row td` sets no text-align, so there is
+   nothing to out-specify. */
 .alignRight {
   text-align: right;
 }
 
-.alignRight .sortButton {
-  justify-content: flex-end;
+/* Sort icon before the label on right-aligned columns.
+ *
+ * With the icon after the text, it occupies the rightmost 16px of the cell and
+ * pushes the label left by exactly that much — so the header no longer lines up
+ * with the digits beneath it. Reversing puts the label hard against the same
+ * right edge as the values. */
+.thead th.alignRight .sortButton {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
 }
 
 /* ---- Body ---------------------------------------------------------------- */

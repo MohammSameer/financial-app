@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { useMemo, useState } from "react";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { formatINR, formatINRCompact } from "@/lib/format";
+import { formatINRCompact } from "@/lib/format";
 import { useTheme } from "@/lib/useTheme";
 import type { CategorySlice } from "@/lib/types";
 import styles from "./Charts.module.css";
@@ -37,6 +37,16 @@ export function CategoryChart({
   onToggleCategory,
 }: Props) {
   const theme = useTheme();
+
+  // Index of the slice under the cursor, or null.
+  //
+  // This replaces a floating tooltip. A cursor-following box over a donut
+  // inevitably lands on the hole — which is exactly where the total sits — so
+  // the two overlapped and neither was readable. Feeding the hover into the
+  // centre instead makes the collision impossible rather than merely unlikely,
+  // uses space the chart already reserves, and drops the per-frame tooltip
+  // repositioning entirely.
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const { slices, total } = useMemo(() => {
     if (!data?.length) return { slices: [], total: 0 };
@@ -72,6 +82,10 @@ export function CategoryChart({
       total: sorted.reduce((sum, s) => sum + Number(s.total), 0),
     };
   }, [data, theme]);
+
+  // Hovering the legend drives the same readout as hovering the ring, so the
+  // keyboard path and the pointer path show identical information.
+  const active = activeIndex === null ? null : (slices[activeIndex] ?? null);
 
   return (
     <Card className={styles.chartCard}>
@@ -113,6 +127,8 @@ export function CategoryChart({
                     startAngle={90}
                     endAngle={-270}
                     isAnimationActive={false}
+                    onMouseEnter={(_, index: number) => setActiveIndex(index)}
+                    onMouseLeave={() => setActiveIndex(null)}
                     onClick={(entry: { name?: string; isOther?: boolean }) => {
                       // "Other" is an aggregate of several categories, so
                       // there is no single filter it maps to.
@@ -130,23 +146,56 @@ export function CategoryChart({
                             ? 1
                             : 0.28
                         }
+                        // Lifts the hovered slice without moving it, so the
+                        // ring geometry stays stable and nothing reflows.
+                        stroke={
+                          activeIndex === slices.indexOf(slice)
+                            ? "var(--text-strong)"
+                            : "var(--surface)"
+                        }
                         style={{ cursor: slice.isOther ? "default" : "pointer" }}
                       />
                     ))}
                   </Pie>
-                  <Tooltip content={<CategoryTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
 
-            <div className={styles.donutCentre}>
-              <span className={styles.donutCentreLabel}>Total spend</span>
-              <span className={styles.donutCentreValue}>
-                {formatINRCompact(total)}
-              </span>
-              <span className={styles.donutCentreSub}>
-                {slices.length} of {data?.length ?? 0} categories
-              </span>
+            {/*
+              The hover readout. aria-live so a screen reader announces the
+              category as focus moves through the legend, which is the keyboard
+              path to the same information.
+            */}
+            <div className={styles.donutCentre} aria-live="polite">
+              {active ? (
+                <>
+                  <span className={styles.donutCentreLabel}>
+                    <span
+                      className={styles.centreSwatch}
+                      style={{ background: active.colour }}
+                      aria-hidden="true"
+                    />
+                    {active.name}
+                  </span>
+                  <span className={styles.donutCentreValue}>
+                    {formatINRCompact(active.value)}
+                  </span>
+                  <span className={styles.donutCentreSub}>
+                    {active.share.toFixed(1)}% ·{" "}
+                    {active.count.toLocaleString("en-IN")} payments
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className={styles.donutCentreLabel}>Total spend</span>
+                  <span className={styles.donutCentreValue}>
+                    {formatINRCompact(total)}
+                  </span>
+                  <span className={styles.donutCentreSub}>
+                    {slices.length} of {data?.length ?? 0} categories
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -156,20 +205,26 @@ export function CategoryChart({
             match hues to read the chart.
           */}
           <div className={styles.legend} role="group" aria-label="Filter by category">
-            {slices.map((slice) => {
-              const active = selected.includes(slice.name);
+            {slices.map((slice, index) => {
+              const isFiltered = selected.includes(slice.name);
               return (
                 <button
                   key={slice.name}
                   type="button"
-                  className={`${styles.legendItem} ${active ? styles.legendItemActive : ""}`}
+                  className={`${styles.legendItem} ${isFiltered ? styles.legendItemActive : ""}`}
                   onClick={() => !slice.isOther && onToggleCategory(slice.name)}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onMouseLeave={() => setActiveIndex(null)}
+                  // Keyboard users get the readout too — focusing a legend
+                  // entry shows the same figures hovering the slice would.
+                  onFocus={() => setActiveIndex(index)}
+                  onBlur={() => setActiveIndex(null)}
                   disabled={slice.isOther}
-                  aria-pressed={slice.isOther ? undefined : active}
+                  aria-pressed={slice.isOther ? undefined : isFiltered}
                   title={
                     slice.isOther
                       ? "Smaller categories, grouped"
-                      : `${active ? "Remove" : "Add"} ${slice.name} filter`
+                      : `${isFiltered ? "Remove" : "Add"} ${slice.name} filter`
                   }
                 >
                   <span
@@ -188,45 +243,5 @@ export function CategoryChart({
         </>
       )}
     </Card>
-  );
-}
-
-interface TooltipProps {
-  active?: boolean;
-  payload?: { payload: { name: string; value: number; count: number; share: number; colour: string; isOther: boolean } }[];
-}
-
-function CategoryTooltip({ active, payload }: TooltipProps) {
-  if (!active || !payload?.length) return null;
-  const d = payload[0].payload;
-
-  return (
-    <div className={styles.tooltip}>
-      <div className={styles.tooltipTitle}>
-        <span
-          className={styles.legendSwatch}
-          style={{ background: d.colour }}
-          aria-hidden="true"
-        />
-        {d.name}
-      </div>
-      <div className={styles.tooltipRow}>
-        <span>Spend</span>
-        <span className={styles.tooltipValue}>{formatINR(d.value)}</span>
-      </div>
-      <div className={styles.tooltipRow}>
-        <span>Share</span>
-        <span className={styles.tooltipValue}>{d.share.toFixed(1)}%</span>
-      </div>
-      <div className={styles.tooltipRow}>
-        <span>Payments</span>
-        <span className={styles.tooltipValue}>
-          {d.count.toLocaleString("en-IN")}
-        </span>
-      </div>
-      {!d.isOther && (
-        <div className={styles.tooltipHint}>Click to filter the table</div>
-      )}
-    </div>
   );
 }

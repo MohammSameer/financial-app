@@ -4,6 +4,13 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xs);
   margin-bottom: var(--space-5);
+
+  /* Lifts the whole filter bar — and therefore any dropdown opened inside it —
+     above the transactions table below. Without this the table's sticky header
+     shares the same layer, and because the table comes later in the document it
+     paints over an open dropdown and hides the options behind it. */
+  position: relative;
+  z-index: var(--z-popover);
 }
 
 .row {

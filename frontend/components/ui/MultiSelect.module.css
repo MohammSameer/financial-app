@@ -75,7 +75,8 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  z-index: var(--z-sticky);
+  /* Above the table's sticky header, not level with it. */
+  z-index: var(--z-popover);
 
   /* Grows to fit the longest option but never narrower than the trigger, and
      never so wide it leaves the viewport on a phone. */

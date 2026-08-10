@@ -134,7 +134,21 @@
   --duration-base: 200ms;
   --duration-slow: 320ms;
 
+  /* ---- Layering ----------------------------------------------------------
+     One ordered scale, because "just add another 10" is how a UI ends up with
+     a dropdown behind a table. Read top to bottom as "what covers what".
+
+     Every value here is deliberate:
+       sticky  — the table's own sticky header, which scrolls under everything
+       popover — filter dropdowns. MUST beat `sticky`: the filter bar sits
+                 above the table in the document, so at equal z-index the
+                 later-painted table wins and the dropdown is swallowed by it.
+       header  — the app bar. Beats popovers so a dropdown scrolled up under
+                 the header slides beneath it rather than over the nav.
+       drawer / modal / toast — overlays, in the order they can stack. */
   --z-sticky: 10;
+  --z-popover: 20;
+  --z-header: 30;
   --z-drawer: 100;
   --z-modal: 200;
   --z-toast: 300;

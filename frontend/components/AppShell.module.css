@@ -7,7 +7,9 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: calc(var(--z-sticky) + 5);
+  /* Above filter dropdowns, so scrolling the page slides an open dropdown
+     under the app bar instead of letting it cover the nav. */
+  z-index: var(--z-header);
 
   height: var(--header-height);
   display: flex;

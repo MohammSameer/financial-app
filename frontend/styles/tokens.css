@@ -1,0 +1,263 @@
+/* =============================================================================
+   Design tokens.
+
+   The single source of truth for colour, spacing, type, radius, shadow and
+   motion. Components reference these variables and never hard-code a value, so
+   the entire theme can change from this one file — which is also what makes
+   the dark theme below a ~40-line override rather than a second stylesheet.
+
+   Two layers on purpose:
+     1. PRIMITIVES — the raw ramps (--indigo-500, --space-4). Never used
+        directly by a component.
+     2. SEMANTIC   — role names (--surface, --text-muted, --border-strong).
+        These are what components use.
+
+   The indirection is what lets dark mode work. A component asking for
+   "the raised surface colour" keeps working when that resolves to near-black;
+   a component asking for "grey 50" does not.
+   ========================================================================== */
+
+:root {
+  /* ---- Primitives: colour ------------------------------------------------ */
+  --white: #ffffff;
+  --black: #000000;
+
+  --slate-25:  #fbfcfd;
+  --slate-50:  #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #020617;
+
+  --indigo-50:  #eef2ff;
+  --indigo-100: #e0e7ff;
+  --indigo-200: #c7d2fe;
+  --indigo-400: #818cf8;
+  --indigo-500: #6366f1;
+  --indigo-600: #4f46e5;
+  --indigo-700: #4338ca;
+
+  --emerald-50:  #ecfdf5;
+  --emerald-200: #a7f3d0;
+  --emerald-500: #10b981;
+  --emerald-600: #059669;
+  --emerald-700: #047857;
+
+  --amber-50:  #fffbeb;
+  --amber-200: #fde68a;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-700: #b45309;
+
+  --rose-50:  #fff1f2;
+  --rose-200: #fecdd3;
+  --rose-500: #f43f5e;
+  --rose-600: #e11d48;
+  --rose-700: #be123c;
+
+  /* Coins get their own ramp rather than borrowing amber. They are the
+     product's currency and appear beside amber warning badges, so they need
+     to stay visually distinct from "caution". */
+  --coin-light: #fcd34d;
+  --coin:       #f0b429;
+  --coin-dark:  #b7791f;
+
+  /* ---- Primitives: spacing ----------------------------------------------
+     A 4px base scale. Every margin, padding and gap in the app is one of
+     these, which is what stops the layout drifting into 13px and 17px gaps. */
+  --space-0:  0;
+  --space-1:  0.25rem;  /*  4px */
+  --space-2:  0.5rem;   /*  8px */
+  --space-3:  0.75rem;  /* 12px */
+  --space-4:  1rem;     /* 16px */
+  --space-5:  1.25rem;  /* 20px */
+  --space-6:  1.5rem;   /* 24px */
+  --space-8:  2rem;     /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* ---- Primitives: type -------------------------------------------------- */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Tabular figures matter for a money table: proportional digits make
+     columns of numbers ragged and genuinely harder to compare down a column. */
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", "Cascadia Mono",
+    Menlo, Consolas, monospace;
+
+  --text-2xs: 0.6875rem; /* 11px — badge text, table meta */
+  --text-xs:  0.75rem;   /* 12px */
+  --text-sm:  0.8125rem; /* 13px — table body */
+  --text-base:0.875rem;  /* 14px — app default; this is a dense data UI */
+  --text-md:  1rem;      /* 16px */
+  --text-lg:  1.125rem;  /* 18px */
+  --text-xl:  1.375rem;  /* 22px */
+  --text-2xl: 1.75rem;   /* 28px */
+  --text-3xl: 2.25rem;   /* 36px */
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.4;
+  --leading-normal: 1.55;
+
+  --tracking-tight: -0.015em;
+  --tracking-wide: 0.02em;
+  --tracking-caps: 0.06em;
+
+  /* ---- Primitives: radius, shadow, motion -------------------------------- */
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.05);
+  --shadow-xl: 0 24px 56px rgba(15, 23, 42, 0.18);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+
+  --z-sticky: 10;
+  --z-drawer: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+
+  /* =========================================================================
+     SEMANTIC — what components actually reference.
+     ====================================================================== */
+
+  /* Surfaces, from furthest back to closest to the reader. */
+  --bg-app: var(--slate-50);
+  --surface: var(--white);
+  --surface-raised: var(--white);
+  --surface-sunken: var(--slate-50);
+  --surface-hover: var(--slate-50);
+  --surface-active: var(--slate-100);
+  --surface-inverse: var(--slate-900);
+
+  /* Text, in descending emphasis. */
+  --text-strong: var(--slate-900);
+  --text-default: var(--slate-700);
+  --text-muted: var(--slate-500);
+  --text-subtle: var(--slate-400);
+  --text-inverse: var(--white);
+  --text-on-accent: var(--white);
+
+  --border: var(--slate-200);
+  --border-strong: var(--slate-300);
+  --border-subtle: var(--slate-100);
+
+  --accent: var(--indigo-600);
+  --accent-hover: var(--indigo-700);
+  --accent-subtle: var(--indigo-50);
+  --accent-border: var(--indigo-200);
+  --accent-text: var(--indigo-700);
+
+  /* Status colours, each with a surface / border / text triple so badges and
+     banners are built from one consistent recipe. */
+  --success: var(--emerald-600);
+  --success-surface: var(--emerald-50);
+  --success-border: var(--emerald-200);
+  --success-text: var(--emerald-700);
+
+  --warning: var(--amber-500);
+  --warning-surface: var(--amber-50);
+  --warning-border: var(--amber-200);
+  --warning-text: var(--amber-700);
+
+  --danger: var(--rose-600);
+  --danger-surface: var(--rose-50);
+  --danger-border: var(--rose-200);
+  --danger-text: var(--rose-700);
+
+  --coin-surface: #fef7e3;
+  --coin-border: #f6dfa4;
+  --coin-text: var(--coin-dark);
+
+  /* One focus ring definition, used by every interactive element. Consistency
+     here is an accessibility feature: a keyboard user learns the indicator
+     once and then recognises it everywhere. */
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  --focus-ring-danger: 0 0 0 2px var(--surface), 0 0 0 4px var(--danger);
+
+  --header-height: 60px;
+  --content-max: 1440px;
+}
+
+/* =============================================================================
+   Dark theme.
+
+   Only the semantic layer is redefined — the primitive ramps stay put. Note
+   that surfaces get *lighter* as they come forward here, the inverse of the
+   light theme, because in the dark elevation reads as emitted light rather
+   than as a cast shadow. Shadows are also deepened, since a shadow tuned for
+   a white page is invisible on a near-black one.
+   ========================================================================== */
+
+[data-theme="dark"] {
+  --bg-app: #0b1120;
+  --surface: #131c2e;
+  --surface-raised: #1a2438;
+  --surface-sunken: #0e1626;
+  --surface-hover: #1e293e;
+  --surface-active: #253148;
+  --surface-inverse: var(--slate-100);
+
+  --text-strong: #f1f5f9;
+  --text-default: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --text-inverse: var(--slate-900);
+
+  --border: #253148;
+  --border-strong: #33415a;
+  --border-subtle: #1c2740;
+
+  --accent: var(--indigo-500);
+  --accent-hover: var(--indigo-400);
+  --accent-subtle: rgba(99, 102, 241, 0.14);
+  --accent-border: rgba(99, 102, 241, 0.32);
+  --accent-text: var(--indigo-200);
+
+  --success: var(--emerald-500);
+  --success-surface: rgba(16, 185, 129, 0.13);
+  --success-border: rgba(16, 185, 129, 0.3);
+  --success-text: #6ee7b7;
+
+  --warning: var(--amber-400);
+  --warning-surface: rgba(245, 158, 11, 0.13);
+  --warning-border: rgba(245, 158, 11, 0.3);
+  --warning-text: var(--amber-200);
+
+  --danger: var(--rose-500);
+  --danger-surface: rgba(244, 63, 94, 0.13);
+  --danger-border: rgba(244, 63, 94, 0.3);
+  --danger-text: var(--rose-200);
+
+  --coin-surface: rgba(240, 180, 41, 0.14);
+  --coin-border: rgba(240, 180, 41, 0.32);
+  --coin-text: var(--coin-light);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 24px 56px rgba(0, 0, 0, 0.7);
+}

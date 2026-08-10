@@ -34,3 +34,6 @@ pgdata/
 
 # Written by the seed when rows fail normalisation; useful locally, not source.
 backend/data/rejected-rows.json
+
+# Local screenshot helper
+frontend/_shots.mjs

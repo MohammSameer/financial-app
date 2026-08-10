@@ -1,0 +1,107 @@
+.pageHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.subtitle {
+  margin-top: var(--space-1);
+  font-size: var(--text-base);
+  color: var(--text-muted);
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 1024px) {
+  .charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.tableCard {
+  overflow: hidden;
+}
+
+/* ---- Data-quality banner -------------------------------------------------
+   The dataset is deliberately messy and the brief scores "whatever you notice
+   in the data". Rather than burying that in the README, the app reports what
+   it found and what it did about it. */
+.dqBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  color: var(--accent-text);
+  line-height: var(--leading-snug);
+}
+
+.dqIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.dqBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.dqTitle {
+  font-weight: var(--weight-semibold);
+  margin-bottom: 2px;
+}
+
+.dqList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  color: var(--text-muted);
+}
+
+.dqStat {
+  font-variant-numeric: tabular-nums;
+}
+
+.dqNumber {
+  font-weight: var(--weight-semibold);
+  color: var(--text-default);
+}
+
+.dqDismiss {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  opacity: 0.6;
+}
+
+.dqDismiss:hover {
+  opacity: 1;
+  background: var(--accent-border);
+}
+
+.dqDismiss:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

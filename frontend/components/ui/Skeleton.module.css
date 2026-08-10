@@ -1,0 +1,48 @@
+/* Loading placeholder.
+ *
+ * A shimmer rather than a spinner: it occupies the shape the real content will
+ * take, so the layout doesn't jump when data lands. For a table that matters
+ * more than usual — a spinner collapses the rows to nothing and then throws 25
+ * of them back, which shifts everything below it.
+ */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-sunken);
+  border-radius: var(--radius-sm);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--border) 60%, transparent),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.text {
+  height: 0.75em;
+  border-radius: var(--radius-full);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+    /* Without the sweep, a flat block still needs to read as "not real
+       content", so it keeps a static tint. */
+    background: color-mix(in srgb, var(--border) 30%, transparent);
+    transform: none;
+  }
+}

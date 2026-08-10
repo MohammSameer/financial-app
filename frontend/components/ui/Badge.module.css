@@ -1,0 +1,77 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  line-height: 1.45;
+  letter-spacing: var(--tracking-wide);
+  white-space: nowrap;
+}
+
+/* A 6px dot carrying the status colour. Colour alone must never be the only
+   signal — the label always spells the status out, so this is reinforcement
+   rather than the message itself. */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.neutral {
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+.success {
+  background: var(--success-surface);
+  color: var(--success-text);
+  border-color: var(--success-border);
+}
+
+.warning {
+  background: var(--warning-surface);
+  color: var(--warning-text);
+  border-color: var(--warning-border);
+}
+
+.danger {
+  background: var(--danger-surface);
+  color: var(--danger-text);
+  border-color: var(--danger-border);
+}
+
+.accent {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  border-color: var(--accent-border);
+}
+
+.coin {
+  background: var(--coin-surface);
+  color: var(--coin-text);
+  border-color: var(--coin-border);
+}
+
+/* Category chips take their colour from the database, so the swatch is set
+   inline. The token-driven variants above cover everything else. */
+.category {
+  background: var(--surface-sunken);
+  color: var(--text-default);
+  border-color: var(--border);
+}
+
+.swatch {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}

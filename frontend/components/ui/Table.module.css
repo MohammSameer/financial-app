@@ -1,0 +1,412 @@
+/* =============================================================================
+   Hand-built table. No component library.
+   ========================================================================== */
+
+.wrap {
+  position: relative;
+  width: 100%;
+  /* The table scrolls inside its own box. The page body must never scroll
+     sideways — that is what breaks a layout at 360px. */
+  overflow-x: auto;
+  overflow-y: auto;
+  /* Momentum scrolling on iOS. */
+  -webkit-overflow-scrolling: touch;
+  /* Anchors the sticky header to this box rather than the viewport. */
+  max-height: var(--table-max-height, 620px);
+}
+
+.table {
+  width: 100%;
+  /* `fixed` rather than `auto`: column widths come from the <col> definitions
+     instead of from content. With `auto` the browser measures every cell, so
+     column positions shift as you page through — a merchant called "Jio" on
+     one page and "Apollo Pharmacy" on the next would visibly resize the
+     column and make the table twitch. */
+  table-layout: fixed;
+  min-width: 780px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--text-sm);
+}
+
+/* ---- Header -------------------------------------------------------------- */
+
+.thead th {
+  position: sticky;
+  top: 0;
+  /* Above the body cells so rows scroll underneath, not over. */
+  z-index: var(--z-sticky);
+
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+
+  /* Opaque: with a transparent header the rows show through as they scroll
+     under it. */
+  background: var(--surface-sunken);
+
+  /* border-collapse: separate means a bottom border on a sticky header
+     scrolls away with the cell. box-shadow is painted on the element itself
+     and stays put. */
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.sortButton:hover {
+  color: var(--text-strong);
+}
+
+.sortButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sortIcon {
+  flex-shrink: 0;
+  /* Reserved even when unsorted, so turning sorting on doesn't nudge the
+     header label sideways. */
+  width: 12px;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+  color: var(--accent);
+}
+
+.sortButton:hover .sortIcon {
+  opacity: 0.4;
+}
+
+.sortIconActive {
+  opacity: 1;
+}
+
+.sortButton:hover .sortIconActive {
+  opacity: 1;
+}
+
+/* Right-align numeric headers over their numeric columns. */
+.alignRight {
+  text-align: right;
+}
+
+.alignRight .sortButton {
+  justify-content: flex-end;
+}
+
+/* ---- Body ---------------------------------------------------------------- */
+
+.row {
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.row td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-default);
+  /* Long merchant names truncate rather than reflowing the row to two lines
+     and making every row a different height. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover td {
+  background: var(--surface-hover);
+}
+
+/* The keyboard equivalent of hover. A row is focusable, so a keyboard user can
+   tab to it and press Enter to open the drawer — the same affordance a mouse
+   user gets from clicking. */
+.clickable:focus-visible {
+  outline: none;
+}
+
+.clickable:focus-visible td {
+  background: var(--surface-hover);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.clickable:active td {
+  background: var(--surface-active);
+}
+
+/* Zebra striping, applied to the row not the cell, so hover can override it
+   cleanly. Subtle enough to aid tracking across a wide row without turning
+   into a pattern. */
+.row:nth-child(even) td {
+  background: color-mix(in srgb, var(--surface-sunken) 45%, transparent);
+}
+
+.row:nth-child(even):hover td {
+  background: var(--surface-hover);
+}
+
+.lastRow td {
+  border-bottom: none;
+}
+
+/* ---- Cell content -------------------------------------------------------- */
+
+.merchantCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.merchantName {
+  font-weight: var(--weight-medium);
+  color: var(--text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Monospaced tabular figures. In a column of money, proportional digits make
+   the decimal points ragged and the magnitudes genuinely harder to compare. */
+.amount {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-medium);
+  color: var(--text-strong);
+  text-align: right;
+}
+
+/* A refund is money coming back, so it reads as a credit, not a payment. */
+.amountRefund {
+  color: var(--success);
+}
+
+.dateCell {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.coinCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--coin-text);
+  font-weight: var(--weight-medium);
+}
+
+.coinZero {
+  color: var(--text-subtle);
+  font-weight: var(--weight-normal);
+}
+
+.flags {
+  display: inline-flex;
+  gap: var(--space-1);
+  margin-left: var(--space-1);
+}
+
+/* ---- Non-data states ----------------------------------------------------- */
+
+.stateCell {
+  padding: 0;
+}
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+}
+
+.stateIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  color: var(--text-subtle);
+}
+
+.stateIconError {
+  background: var(--danger-surface);
+  color: var(--danger);
+}
+
+.stateTitle {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--text-strong);
+}
+
+.stateBody {
+  max-width: 380px;
+  font-size: var(--text-base);
+  color: var(--text-muted);
+  line-height: var(--leading-snug);
+}
+
+/* A stale-data veil. While a new page loads the old rows stay put, dimmed and
+   non-interactive, instead of being replaced by a skeleton. Keeping the layout
+   still makes paging feel far quicker than it measures. */
+.refreshing tbody {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+/* Thin progress bar pinned under the sticky header during a refetch. */
+.progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: calc(var(--z-sticky) + 1);
+  overflow: hidden;
+  background: var(--accent-subtle);
+}
+
+.progressBar {
+  width: 40%;
+  height: 100%;
+  background: var(--accent);
+  animation: indeterminate 1.1s var(--ease-in-out) infinite;
+}
+
+@keyframes indeterminate {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+/* =============================================================================
+   Responsive.
+
+   Below 720px the table stops being a grid and each row becomes a stacked
+   card. A horizontally scrolling 8-column table on a 360px phone is
+   technically readable and practically useless: you cannot see the merchant
+   and the amount at the same time, which is the one comparison that matters.
+   ========================================================================== */
+
+@media (max-width: 720px) {
+  .wrap {
+    overflow-x: visible;
+    max-height: none;
+  }
+
+  /* The table stops being a table. This is load-bearing: leaving the element
+     as display:table while the rows are display:block means the rows are laid
+     out by the table algorithm, which sizes them from the <colgroup> widths
+     rather than the container — the cards end up about two-thirds width with a
+     gap down the right. Dropping the table display on the element, the tbody
+     and the rows lets each card fill the width like the block it now is. */
+  .table {
+    display: block;
+    min-width: 0;
+    width: 100%;
+    table-layout: auto;
+  }
+
+  .table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .thead {
+    /* Not display:none — that removes the header from the accessibility tree
+       too, and a screen-reader user still needs the column names. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .row {
+    display: block;
+    width: 100%;
+    margin-bottom: var(--space-3);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
+    overflow: hidden;
+  }
+
+  .row td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--border-subtle);
+    white-space: normal;
+    background: transparent !important;
+  }
+
+  /* The column name, injected from a data attribute the cell already carries
+     for the accessible name. */
+  .row td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+    color: var(--text-subtle);
+  }
+
+  .row td:last-child {
+    border-bottom: none;
+  }
+
+  /* The merchant is the row's headline, so it gets the card's header
+     treatment rather than a label/value pair. */
+  .row td:first-child {
+    background: var(--surface-sunken) !important;
+    padding: var(--space-3);
+  }
+
+  .row td:first-child::before {
+    display: none;
+  }
+
+  .amount,
+  .coinCell,
+  .dateCell {
+    text-align: right;
+  }
+
+  .clickable:focus-visible td {
+    box-shadow: none;
+  }
+
+  .clickable:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}

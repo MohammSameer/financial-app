@@ -1,0 +1,176 @@
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: calc(var(--z-sticky) + 5);
+
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-6);
+
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  /* Frosted rather than solid, so the table scrolling beneath reads as
+     continuous rather than disappearing behind an opaque slab. */
+  backdrop-filter: saturate(160%) blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-md);
+  color: var(--text-strong);
+  letter-spacing: var(--tracking-tight);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--indigo-500), var(--indigo-700));
+  color: var(--white);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  box-shadow: var(--shadow-xs);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: var(--space-4);
+}
+
+.navLink {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.navLink:hover {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
+
+.navLinkActive {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.themeToggle {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.themeToggle:hover {
+  color: var(--text-strong);
+  border-color: var(--border-strong);
+}
+
+.themeToggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+.footer {
+  padding: var(--space-6);
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--text-subtle);
+  border-top: 1px solid var(--border-subtle);
+}
+
+@media (max-width: 720px) {
+  .header {
+    padding: 0 var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .nav {
+    margin-left: var(--space-1);
+  }
+
+  .navLink {
+    padding: var(--space-2);
+  }
+
+  .main {
+    padding: var(--space-4);
+  }
+}
+
+/* At 360px the brand wordmark goes; the logo tile alone still identifies the
+   app, and the space is worth more to the nav and coin balance.
+   Everything else tightens too — logo + two nav links + the coin pill + the
+   theme toggle only just fit across 360px, and at default sizing the toggle
+   gets pushed off the right edge. */
+@media (max-width: 420px) {
+  .brandText {
+    display: none;
+  }
+
+  .header {
+    padding: 0 var(--space-3);
+    gap: var(--space-1);
+  }
+
+  .nav {
+    margin-left: 0;
+  }
+
+  .navLink {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-xs);
+  }
+
+  .headerRight {
+    gap: var(--space-2);
+  }
+}

@@ -1,0 +1,68 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 34px;
+  padding: 0 var(--space-3);
+
+  background: var(--coin-surface);
+  border: 1px solid var(--coin-border);
+  border-radius: var(--radius-full);
+  color: var(--coin-text);
+  text-decoration: none;
+
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-base);
+  /* Tabular figures stop the header shifting as the balance changes width
+     during the redeem countdown. */
+  font-variant-numeric: tabular-nums;
+
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+.pill:hover {
+  border-color: var(--coin);
+}
+
+.pill:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+/* Fires when the balance drops after a redeem, so the deduction is visible
+   rather than just silently different. */
+.spend {
+  animation: spendPulse 620ms var(--ease-out);
+}
+
+@keyframes spendPulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.09); }
+  100% { transform: scale(1); }
+}
+
+.skeleton {
+  width: 76px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+}
+
+.label {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  opacity: 0.75;
+  letter-spacing: var(--tracking-wide);
+}
+
+@media (max-width: 480px) {
+  .label {
+    display: none;
+  }
+}

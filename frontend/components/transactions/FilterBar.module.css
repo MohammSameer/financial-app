@@ -1,0 +1,193 @@
+.bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  margin-bottom: var(--space-5);
+}
+
+.row {
+  display: grid;
+  /* Search gets the room it needs; the facets share what's left evenly and
+     collapse to fewer columns as space runs out. */
+  grid-template-columns: minmax(200px, 1.6fr) repeat(3, minmax(130px, 1fr)) auto;
+  gap: var(--space-3);
+  align-items: end;
+  padding: var(--space-4);
+}
+
+.advanced {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-3);
+  padding: 0 var(--space-4) var(--space-4);
+  border-top: 1px dashed var(--border);
+  padding-top: var(--space-4);
+}
+
+.rangeGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.rangeSeparator {
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
+  flex-shrink: 0;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-sunken);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.moreButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.moreButton:hover {
+  color: var(--text-strong);
+  border-color: var(--border-strong);
+}
+
+.moreButton:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.chevron {
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ---- Active filter chips ------------------------------------------------- */
+
+/* A visible, individually removable list of what is currently applied. Without
+   it a user who scrolled past the controls has no way to tell why the table
+   looks empty. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px var(--space-1) 3px var(--space-2);
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-full);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  color: var(--accent-text);
+  max-width: 220px;
+}
+
+.chipLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chipRemove {
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: var(--radius-full);
+  color: inherit;
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+
+.chipRemove:hover {
+  opacity: 1;
+  background: var(--accent-border);
+}
+
+.chipRemove:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.resultCount {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.clearAll {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--danger-text);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.clearAll:hover {
+  background: var(--danger-surface);
+}
+
+.clearAll:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-danger);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+@media (max-width: 1100px) {
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .searchField {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-3);
+  }
+
+  .advanced {
+    padding: var(--space-3);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .toggleRow {
+    padding: var(--space-3);
+  }
+}

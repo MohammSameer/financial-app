@@ -1,4 +1,4 @@
-﻿"""Response models.
+"""Response models.
 
 These are the API contract. The frontend's TypeScript types mirror them, so a
 field renamed here is meant to be a visible, deliberate break rather than a

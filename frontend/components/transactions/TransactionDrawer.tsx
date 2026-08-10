@@ -31,7 +31,7 @@ export function TransactionDrawer({ transactionId, onClose }: Props) {
     [transactionId],
   );
 
-  const { data, loading, error } = useApi(fetcher, [transactionId], {
+  const { data, loading, error } = useApi(fetcher, `txn:${transactionId}`, {
     enabled: transactionId !== null,
   });
 

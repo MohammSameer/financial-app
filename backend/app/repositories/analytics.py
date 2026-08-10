@@ -1,4 +1,4 @@
-﻿"""Aggregate queries behind the charts.
+"""Aggregate queries behind the charts.
 
 These take the same TransactionFilters as the table. That is the whole
 mechanism behind two-way cross-filtering: narrow the filters and the charts
@@ -52,7 +52,7 @@ def by_month(filters: TransactionFilters) -> list[dict]:
     """Monthly spend and refunds.
 
     Months are IST calendar months (see the occurred_on column). The
-    ::timestamp cast matches the expression index built in schema.sql â€” drop it
+    ::timestamp cast matches the expression index built in schema.sql — drop it
     and the planner silently stops using that index.
     """
     where, params = filters.build_where()

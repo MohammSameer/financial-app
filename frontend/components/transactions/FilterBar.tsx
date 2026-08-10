@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Field, Input, useFieldId } from "@/components/ui/Field";
 import { MultiSelect } from "@/components/ui/MultiSelect";
 import { formatMonth, formatNumber } from "@/lib/format";
@@ -40,7 +40,19 @@ export function FilterBar({
   onChange,
   onClear,
 }: Props) {
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  // null means "the user hasn't touched this", in which case the panel opens
+  // itself whenever a date or amount filter is already set — arriving from a
+  // shared URL, say, where leaving it collapsed would hide the reason the table
+  // looks unexpectedly narrow.
+  //
+  // Derived rather than synced with an effect: an effect would fight the user,
+  // reopening the panel every time a filter changed after they closed it.
+  const [manualOverride, setManualOverride] = useState<boolean | null>(null);
+  const hasAdvancedFilter = Boolean(
+    filters.dateFrom || filters.dateTo || filters.amountMin || filters.amountMax,
+  );
+  const showAdvanced = manualOverride ?? hasAdvancedFilter;
+
   const searchId = useFieldId("search");
   const fromId = useFieldId("from");
   const toId = useFieldId("to");
@@ -48,15 +60,6 @@ export function FilterBar({
   const maxId = useFieldId("max");
 
   const active = activeFilterCount(filters);
-
-  // Open the advanced panel automatically if a date or amount filter is
-  // already set — from a shared URL, say. Leaving it collapsed would hide the
-  // reason the table looks unexpectedly narrow.
-  useEffect(() => {
-    if (filters.dateFrom || filters.dateTo || filters.amountMin || filters.amountMax) {
-      setShowAdvanced(true);
-    }
-  }, [filters.dateFrom, filters.dateTo, filters.amountMin, filters.amountMax]);
 
   const chips: { key: string; label: string; onRemove: () => void }[] = [];
 
@@ -185,7 +188,7 @@ export function FilterBar({
         <button
           type="button"
           className={styles.moreButton}
-          onClick={() => setShowAdvanced((v) => !v)}
+          onClick={() => setManualOverride(!showAdvanced)}
           aria-expanded={showAdvanced}
         >
           Date &amp; amount

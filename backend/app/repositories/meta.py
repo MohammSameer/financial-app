@@ -1,4 +1,4 @@
-﻿"""Everything the filter controls need to render, in one round trip."""
+"""Everything the filter controls need to render, in one round trip."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ def facets(user_id: int) -> dict:
 
     Counts are unfiltered on purpose. A facet list that shrinks as you filter
     makes it impossible to widen a selection again without clearing everything
-    first â€” the option you want to add has already vanished from the dropdown.
+    first — the option you want to add has already vanished from the dropdown.
     """
     with get_cursor() as cur:
         cur.execute(
@@ -66,7 +66,7 @@ def facets(user_id: int) -> dict:
                 MAX(occurred_on) AS max_date,
                 MIN(amount)      AS min_amount,
                 -- The amount slider's upper bound ignores flagged outliers.
-                -- Anchoring it to â‚¹99,99,99,999 would push every real
+                -- Anchoring it to ₹99,99,99,999 would push every real
                 -- transaction into the leftmost pixel of the track.
                 MAX(amount) FILTER (WHERE NOT is_outlier) AS max_amount
             FROM transactions WHERE user_id = %s

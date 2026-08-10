@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { BalanceProvider } from "@/lib/BalanceContext";
+import { useTheme } from "@/lib/useTheme";
 import { CoinPill } from "./CoinPill";
 import { ToastProvider } from "./ui/Toast";
 import styles from "./AppShell.module.css";
@@ -14,18 +15,14 @@ const NAV = [
 ];
 
 function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  // Read the theme the inline script in layout.tsx already applied, rather
-  // than deciding again here — deciding twice is how the flash comes back.
-  useEffect(() => {
-    const current = document.documentElement.getAttribute("data-theme");
-    setTheme(current === "dark" ? "dark" : "light");
-  }, []);
+  // Reads the attribute the inline script in layout.tsx already applied. The
+  // DOM is the single source of truth for the theme — there is no React copy of
+  // it to fall out of step, and writing the attribute below is what re-renders
+  // every subscriber, including the charts.
+  const theme = useTheme();
 
   function toggle() {
     const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
     document.documentElement.setAttribute("data-theme", next);
     try {
       localStorage.setItem("coinstack-theme", next);

@@ -28,14 +28,16 @@ export function RewardsView() {
   // and the history list.
   const [version, setVersion] = useState(0);
 
-  const rewards = useApi((signal) => api.rewards(signal), [version, balance?.balance]);
+  // The balance is part of the key because affordability is decided
+  // server-side — spending coins can flip a reward from affordable to not, so
+  // the catalogue has to be re-read when the balance moves.
+  const rewards = useApi(
+    (signal) => api.rewards(signal),
+    `rewards:${version}:${balance?.balance ?? "?"}`,
+  );
   const history = useApi(
-    (signal) =>
-      fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000"}/api/rewards/history`,
-        { signal },
-      ).then((r) => r.json()),
-    [version],
+    (signal) => api.redemptionHistory(signal),
+    `history:${version}`,
   );
 
   const open = useCallback((reward: Reward) => {
@@ -226,28 +228,21 @@ export function RewardsView() {
       <Card style={{ marginTop: "var(--space-6)" }}>
         <CardHeader title="Redemption history" as="h2" />
         <CardBody>
-          {Array.isArray(history.data) && history.data.length > 0 ? (
+          {history.data && history.data.length > 0 ? (
             <div className={styles.historyList}>
-              {history.data.map(
-                (item: {
-                  id: number;
-                  reward_title: string;
-                  coins_spent: number;
-                  redeemed_at: string;
-                }) => (
-                  <div key={item.id} className={styles.historyItem}>
-                    <div>
-                      <div className={styles.historyTitle}>{item.reward_title}</div>
-                      <div className={styles.historyDate}>
-                        {formatDateTime(item.redeemed_at)}
-                      </div>
+              {history.data.map((item) => (
+                <div key={item.id} className={styles.historyItem}>
+                  <div>
+                    <div className={styles.historyTitle}>{item.reward_title}</div>
+                    <div className={styles.historyDate}>
+                      {formatDateTime(item.redeemed_at)}
                     </div>
-                    <span className={styles.historyCost}>
-                      −{formatCoins(item.coins_spent)}
-                    </span>
                   </div>
-                ),
-              )}
+                  <span className={styles.historyCost}>
+                    −{formatCoins(item.coins_spent)}
+                  </span>
+                </div>
+              ))}
             </div>
           ) : (
             <p className={styles.empty}>

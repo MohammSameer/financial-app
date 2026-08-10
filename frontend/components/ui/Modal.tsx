@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useFocusTrap } from "@/lib/useFocusTrap";
+import { useIsClient } from "@/lib/useTheme";
 import styles from "./Modal.module.css";
 
 export interface ModalProps {
@@ -49,10 +50,9 @@ export function Modal({
   const titleId = useId();
   const descId = useId();
 
-  // Portals need a DOM that exists. Rendering null on the server and until
-  // after mount avoids a hydration mismatch.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // Portals need a document. False on the server and through hydration, so no
+  // mismatch.
+  const mounted = useIsClient();
 
   useFocusTrap(dialogRef, open && mounted, busy ? undefined : onClose);
 

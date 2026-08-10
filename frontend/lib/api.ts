@@ -12,6 +12,7 @@ import type {
   Balance,
   Meta,
   RedeemResponse,
+  Redemption,
   Reward,
   TransactionDetail,
   TransactionPage,
@@ -118,6 +119,9 @@ export const api = {
     request<Balance>("/api/rewards/balance", { signal }),
 
   rewards: (signal?: AbortSignal) => request<Reward[]>("/api/rewards", { signal }),
+
+  redemptionHistory: (signal?: AbortSignal) =>
+    request<Redemption[]>("/api/rewards/history", { signal }),
 
   redeem: (rewardId: number, requestId: string) =>
     request<RedeemResponse>("/api/rewards/redeem", {

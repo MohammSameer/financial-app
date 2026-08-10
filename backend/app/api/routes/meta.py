@@ -1,4 +1,4 @@
-﻿"""Filter metadata and data-quality reporting."""
+"""Filter metadata and data-quality reporting."""
 
 from __future__ import annotations
 

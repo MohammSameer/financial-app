@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useFocusTrap } from "@/lib/useFocusTrap";
+import { useIsClient } from "@/lib/useTheme";
 import styles from "./Drawer.module.css";
 
 export interface DrawerProps {
@@ -23,9 +24,8 @@ export interface DrawerProps {
 export function Drawer({ open, onClose, title, eyebrow, children }: DrawerProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsClient();
 
-  useEffect(() => setMounted(true), []);
   useFocusTrap(panelRef, open && mounted, onClose);
 
   if (!open || !mounted) return null;

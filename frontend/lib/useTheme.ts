@@ -1,37 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 /**
- * Reports the active theme, and re-reports it when the toggle flips.
+ * Subscribe to changes of the `data-theme` attribute on <html>.
  *
- * The charts need this because their colours come from the API as two
- * explicit sets — a light hex and a dark hex per category — rather than from
- * CSS variables. SVG fills inside Recharts are set as attributes, so a
- * `var(--x)` would not re-resolve on a theme change; the component has to
- * re-render with a different value.
+ * useSyncExternalStore rather than useState + useEffect. The theme genuinely
+ * *is* external state — it lives on a DOM attribute, written by the inline
+ * script in layout.tsx before React boots and by the header toggle afterwards.
+ * Mirroring it into React state means a render, then an effect, then a second
+ * render; this reads it during render and re-renders only when it actually
+ * changes.
  *
- * A MutationObserver rather than a matchMedia listener: the theme is whatever
- * `data-theme` currently says, which may be an explicit user choice that
- * overrides the OS preference.
+ * A MutationObserver rather than a matchMedia listener, because the attribute
+ * reflects an explicit user choice that can override the OS preference.
  */
+function subscribe(onChange: () => void): () => void {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  return () => observer.disconnect();
+}
+
+function getSnapshot(): "light" | "dark" {
+  return document.documentElement.getAttribute("data-theme") === "dark"
+    ? "dark"
+    : "light";
+}
+
+/**
+ * The server has no DOM, so it always renders the light theme. The inline
+ * script has already stamped the real theme on <html> before hydration, so the
+ * first client render corrects it without a visible flash.
+ */
+function getServerSnapshot(): "light" | "dark" {
+  return "light";
+}
+
 export function useTheme(): "light" | "dark" {
-  // Starts light so the server and the first client render agree; the effect
-  // corrects it before paint if the real theme is dark.
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
 
-  useEffect(() => {
-    const root = document.documentElement;
+const noopSubscribe = () => () => {};
 
-    const read = () =>
-      setTheme(root.getAttribute("data-theme") === "dark" ? "dark" : "light");
-
-    read();
-
-    const observer = new MutationObserver(read);
-    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => observer.disconnect();
-  }, []);
-
-  return theme;
+/**
+ * False during server render and the hydration pass, true afterwards.
+ *
+ * Portals need a real `document`, so Modal and Drawer must not render one until
+ * the client has taken over. The usual `useState(false)` + `useEffect(setTrue)`
+ * does this with an extra render; this expresses the same thing as what it
+ * actually is — a value that differs between the server and client snapshots.
+ */
+export function useIsClient(): boolean {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
 }

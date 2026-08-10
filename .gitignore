@@ -1,4 +1,4 @@
-﻿# Assignment brief â€” confidential, not for a public repo
+# Assignment brief — confidential, not for a public repo
 some.pdf
 transactions (1).json
 
@@ -35,7 +35,7 @@ pgdata/
 # Written by the seed when rows fail normalisation; useful locally, not source.
 backend/data/rejected-rows.json
 
-# Local screenshot helper
+# Local Playwright helpers used to drive and screenshot the running app.
 frontend/_shots.mjs
 frontend/_prodcheck.mjs
-
+frontend/_verify.mjs

@@ -84,7 +84,7 @@ export function TransactionsView() {
 
   const transactions = useApi(
     (signal) => api.transactions(txQuery, signal),
-    [txQuery],
+    txQuery,
   );
 
   // Same filters, different endpoint. This is what makes cross-filtering
@@ -92,10 +92,10 @@ export function TransactionsView() {
   // shows, so filtering by any means reshapes both.
   const analytics = useApi(
     (signal) => api.analytics(analyticsQuery, signal),
-    [analyticsQuery],
+    analyticsQuery,
   );
 
-  const meta = useApi((signal) => api.meta(signal), []);
+  const meta = useApi((signal) => api.meta(signal), "meta");
 
   // ---- Interactions -------------------------------------------------------
   const toggleCategory = useCallback(
@@ -370,3 +370,4 @@ export function TransactionsView() {
     </>
   );
 }
+

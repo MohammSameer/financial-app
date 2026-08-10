@@ -6,7 +6,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -20,7 +19,8 @@ interface BalanceContextValue {
   error: Error | null;
   /** Redeems, updating the visible balance immediately and rolling back on failure. */
   redeem: (rewardId: number, coinCost: number) => Promise<RedeemResponse>;
-  refresh: () => Promise<void>;
+  /** Re-reads the balance from the server. */
+  refresh: () => void;
 }
 
 const BalanceContext = createContext<BalanceContextValue | null>(null);
@@ -28,54 +28,51 @@ const BalanceContext = createContext<BalanceContextValue | null>(null);
 /**
  * Owns the coin balance for the whole app.
  *
- * It lives in context rather than in the rewards page because the balance is
- * shown in the header on every route — the brief asks for it to always be
- * visible. Redeeming on /rewards has to update the header instantly, and
- * lifting the state to a shared provider is what makes that one state change
- * rather than two components trying to stay in step.
+ * It lives in context rather than on the rewards page because the balance sits
+ * in the header on every route — the brief asks for it to always be visible.
+ * Redeeming on /rewards has to move the header number instantly, and lifting
+ * the state here makes that one state change rather than two components trying
+ * to stay in step.
  */
 export function BalanceProvider({ children }: { children: ReactNode }) {
   const [balance, setBalance] = useState<Balance | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  // Bumped to trigger a re-read.
+  const [version, setVersion] = useState(0);
 
-  // Guards against a response landing after the component unmounts.
-  const mounted = useRef(true);
   useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
+    const controller = new AbortController();
 
-  const refresh = useCallback(async () => {
-    try {
-      const next = await api.balance();
-      if (mounted.current) {
+    // The promise chain, not an awaited async function. Every setState below
+    // happens in a callback after the request settles — nothing runs
+    // synchronously while the effect body executes, so this can't cascade a
+    // second render pass on mount.
+    api
+      .balance(controller.signal)
+      .then((next) => {
         setBalance(next);
         setError(null);
-      }
-    } catch (err) {
-      if (mounted.current) {
+      })
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
         setError(err instanceof Error ? err : new Error("Couldn't load balance"));
-      }
-    } finally {
-      if (mounted.current) setLoading(false);
-    }
-  }, []);
+      });
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    // Aborting also covers unmount, so no stale response can write to a
+    // component that is gone.
+    return () => controller.abort();
+  }, [version]);
+
+  const refresh = useCallback(() => setVersion((v) => v + 1), []);
 
   /**
    * Optimistic redeem with rollback.
    *
    * The balance drops the moment the user confirms, so the reward feels
-   * immediate. If the call fails, the previous balance is restored exactly —
-   * captured before the optimistic write rather than recomputed by adding the
-   * cost back, because addition would be wrong if the true balance had moved
-   * for some other reason in the meantime.
+   * immediate. On failure the previous balance is restored exactly — captured
+   * before the optimistic write rather than recomputed by adding the cost back,
+   * because addition would be wrong if the true balance had moved for any other
+   * reason in between.
    *
    * This is only safe because the backend is genuinely atomic: a rejected
    * redeem writes nothing at all, so "put it back" is always the correct
@@ -96,23 +93,22 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
 
       try {
         const result = await api.redeem(rewardId, uuid());
-        // The server's balance wins. Local arithmetic is a prediction; this
+        // The server's balance wins. Local arithmetic was a prediction; this
         // is the fact.
-        if (mounted.current) setBalance(result.balance);
+        setBalance(result.balance);
         return result;
       } catch (err) {
         // Roll back to the exact pre-request value.
-        if (mounted.current && snapshot) setBalance(snapshot);
+        if (snapshot) setBalance(snapshot);
 
-        // A 409 sometimes carries the real balance, which is more current
-        // than our snapshot — adopt it when it does.
-        if (err instanceof ApiError && typeof err.details.available === "number") {
-          if (mounted.current && snapshot) {
-            setBalance({
-              ...snapshot,
-              balance: err.details.available as number,
-            });
-          }
+        // A 409 carries the server's real balance, which is more current than
+        // our snapshot — prefer it when present.
+        if (
+          err instanceof ApiError &&
+          typeof err.details.available === "number" &&
+          snapshot
+        ) {
+          setBalance({ ...snapshot, balance: err.details.available as number });
         }
         throw err;
       }
@@ -121,8 +117,15 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ balance, loading, error, redeem, refresh }),
-    [balance, loading, error, redeem, refresh],
+    () => ({
+      balance,
+      // Derived: nothing has arrived and nothing has failed yet.
+      loading: balance === null && error === null,
+      error,
+      redeem,
+      refresh,
+    }),
+    [balance, error, redeem, refresh],
   );
 
   return <BalanceContext.Provider value={value}>{children}</BalanceContext.Provider>;
@@ -131,8 +134,8 @@ export function BalanceProvider({ children }: { children: ReactNode }) {
 export function useBalance(): BalanceContextValue {
   const ctx = useContext(BalanceContext);
   if (!ctx) {
-    // A clear failure at the point of the mistake beats a null-pointer three
-    // components deeper.
+    // A clear failure at the point of the mistake beats a null dereference
+    // three components deeper.
     throw new Error("useBalance must be used inside a BalanceProvider");
   }
   return ctx;

@@ -5,7 +5,18 @@ and turn spending into coins you can redeem.
 
 Built for the Digital Alpha Technologies take-home. Frontend through database.
 
-**Live:** _frontend URL_ · _backend URL_ · _(see [Deployment](#deployment))_
+### Live
+
+| | |
+|---|---|
+| **App** | **https://coin-stack.vercel.app** |
+| **API** | **https://coinstack.onrender.com** ([docs](https://coinstack.onrender.com/docs) · [health](https://coinstack.onrender.com/health)) |
+| **Database** | Neon — PostgreSQL 18.4, AWS Singapore |
+
+> The API is on Render's free tier, which sleeps after 15 minutes idle. **The
+> first request after a quiet spell can take ~30 seconds** while the instance
+> wakes; everything after that is normal. Opening the API health check first is
+> the quickest way to wake it.
 
 ---
 
@@ -160,11 +171,24 @@ reward · `409` insufficient balance / unavailable · `422` malformed body.
 
 ## Deployment
 
-Frontend on Vercel, backend on Render, Postgres on Neon.
+Frontend on Vercel, backend on Render, Postgres on Neon — full walkthrough in
+[DEPLOYMENT.md](DEPLOYMENT.md).
 
-The backend needs `DATABASE_URL` and `CORS_ORIGINS` (the deployed frontend
-origin). The frontend needs `NEXT_PUBLIC_API_URL`. Seed the hosted database by
-pointing `DATABASE_URL` at it and running `python -m scripts.seed` once.
+**Render and Neon are both in Singapore, deliberately.** The API issues several
+queries per request, so database round-trip time is multiplied. Same-region
+makes each one ~1ms instead of ~90ms; measured from a laptop in India against
+Neon directly, one analytics call spent ~700ms almost entirely in network
+latency.
+
+Two settings are easy to get wrong, and both fail confusingly:
+
+- **Render → Root Directory must be `backend`.** Otherwise the build runs at the
+  repo root and reports `Could not open requirements file`. Note that
+  `render.yaml` only applies to Blueprint deploys — a manually created Web
+  Service ignores it.
+- **Vercel → Root Directory must be `frontend`, framework Next.js.** On the
+  "Other" preset the build succeeds and then fails looking for a `public/`
+  directory. `frontend/vercel.json` pins the framework.
 
 ---
 
@@ -213,9 +237,15 @@ pointing `DATABASE_URL` at it and running `python -m scripts.seed` once.
   that yields zero rows. The alternative — counts that shrink as you filter —
   makes it impossible to widen a selection once narrowed.
 - **Render's free tier cold-starts.** The first request after idle can take
-  ~30 seconds.
+  ~30 seconds. Nothing to do about it on a free plan.
 - **`ANALYZE` runs at seed time only.** A long-lived deployment would want
   autovacuum tuning; not relevant for a fixed dataset.
+- **Recharts 2.x is flagged deprecated by npm.** v3 is a breaking migration I
+  chose not to start against the deadline. 2.x is stable and the charts here
+  use a small, well-settled part of its API.
+- **The live database is shared.** Redeeming through the deployed app really
+  does spend coins, and they stay spent. Re-running the seed restores the
+  opening balance of 257,238.
 
 ---
 

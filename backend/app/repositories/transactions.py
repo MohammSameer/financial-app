@@ -35,6 +35,76 @@ _COLUMNS = """
 """
 
 
+# Count and money totals over the whole filtered set, in one pass with FILTER
+# clauses rather than several queries.
+#
+# "Spend" deliberately counts only positive, successful, non-outlier amounts: a
+# refund is money returning, a failed payment never moved, and the
+# ₹99,99,99,999 row is a data error that would otherwise dominate every total on
+# the screen.
+#
+# `{where}` is filled by str.format from the filter builder, which emits only
+# placeholders — no user input is ever interpolated here.
+_TOTALS_SQL = f"""
+    SELECT
+        COUNT(*) AS transaction_count,
+
+        COUNT(*) FILTER (
+            WHERE t.status = 'SUCCESS' AND t.amount > 0 AND NOT t.is_outlier
+        ) AS successful_count,
+
+        COALESCE(SUM(t.amount) FILTER (
+            WHERE t.status = 'SUCCESS' AND t.amount > 0 AND NOT t.is_outlier
+        ), 0) AS total_spend,
+
+        COALESCE(ABS(SUM(t.amount) FILTER (WHERE t.amount < 0)), 0) AS total_refunded,
+
+        COALESCE(AVG(t.amount) FILTER (
+            WHERE t.status = 'SUCCESS' AND t.amount > 0 AND NOT t.is_outlier
+        ), 0) AS average_spend,
+
+        COALESCE(SUM(t.coins_earned), 0) AS coins_earned
+    {_FROM}
+    WHERE {{where}}
+"""
+
+
+def fetch_page_and_totals(
+    filters: TransactionFilters,
+    *,
+    page: int,
+    page_size: int,
+    sort: SortField,
+    order: SortOrder,
+) -> tuple[list[dict], dict]:
+    """Both queries on one connection.
+
+    The page and the totals were previously fetched through separate
+    ``get_cursor()`` calls, which meant two pool checkouts and two round trips
+    for what is logically one request. Sharing the connection halves the
+    latency of the dashboard's heaviest endpoint — negligible against a local
+    database, very much not against a hosted one in another region.
+    """
+    where, params = filters.build_where()
+
+    page_sql = f"""
+        SELECT {_COLUMNS}
+        {_FROM}
+        WHERE {where}
+        ORDER BY {order_by_clause(sort, order)}
+        LIMIT %s OFFSET %s
+    """
+
+    with get_cursor() as cur:
+        cur.execute(_TOTALS_SQL.format(where=where), params)
+        totals = cur.fetchone()
+
+        cur.execute(page_sql, [*params, page_size, (page - 1) * page_size])
+        items = cur.fetchall()
+
+    return items, totals
+
+
 def fetch_page(
     filters: TransactionFilters,
     *,
@@ -72,30 +142,8 @@ def fetch_totals(filters: TransactionFilters) -> dict:
     total on the screen.
     """
     where, params = filters.build_where()
-    sql = f"""
-        SELECT
-            COUNT(*) AS transaction_count,
-
-            COUNT(*) FILTER (
-                WHERE t.status = 'SUCCESS' AND t.amount > 0 AND NOT t.is_outlier
-            ) AS successful_count,
-
-            COALESCE(SUM(t.amount) FILTER (
-                WHERE t.status = 'SUCCESS' AND t.amount > 0 AND NOT t.is_outlier
-            ), 0) AS total_spend,
-
-            COALESCE(ABS(SUM(t.amount) FILTER (WHERE t.amount < 0)), 0) AS total_refunded,
-
-            COALESCE(AVG(t.amount) FILTER (
-                WHERE t.status = 'SUCCESS' AND t.amount > 0 AND NOT t.is_outlier
-            ), 0) AS average_spend,
-
-            COALESCE(SUM(t.coins_earned), 0) AS coins_earned
-        {_FROM}
-        WHERE {where}
-    """
     with get_cursor() as cur:
-        cur.execute(sql, params)
+        cur.execute(_TOTALS_SQL.format(where=where), params)
         return cur.fetchone()
 
 

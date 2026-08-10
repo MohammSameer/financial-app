@@ -22,20 +22,24 @@ def list_transactions(
     page_size = max(1, min(page_size, settings.max_page_size))
     page = max(1, page)
 
-    totals = repo.fetch_totals(filters)
+    items, totals = repo.fetch_page_and_totals(
+        filters, page=page, page_size=page_size, sort=sort, order=order
+    )
     total = int(totals["transaction_count"])
     total_pages = max(1, math.ceil(total / page_size)) if total else 0
 
     # A filter change can leave the user on a page that no longer exists —
     # sitting on page 40 and then filtering down to 3 pages would otherwise
-    # render an empty table that looks like a bug. Clamp instead, and report
-    # the page actually served so the pagination control stays in sync.
+    # render an empty table that looks like a bug. Clamp and re-fetch, and
+    # report the page actually served so the pagination control stays in sync.
+    #
+    # The re-fetch only happens on the rare overshoot, so the common path
+    # still costs one round trip.
     if total_pages and page > total_pages:
         page = total_pages
-
-    items = repo.fetch_page(
-        filters, page=page, page_size=page_size, sort=sort, order=order
-    )
+        items = repo.fetch_page(
+            filters, page=page, page_size=page_size, sort=sort, order=order
+        )
 
     return {
         "items": items,

@@ -8,6 +8,11 @@ services:
     name: coinstack-api
     runtime: python
     plan: free
+    # Must match the Neon region. The API issues several queries per request, so
+    # every millisecond of database round trip is multiplied. Same-region turns
+    # ~90ms hops into ~1ms ones; measured from India to Neon Singapore, a single
+    # analytics call took ~700ms almost entirely in network latency.
+    region: singapore
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     # $PORT is assigned by Render; binding to a fixed port fails health checks.
@@ -17,8 +22,6 @@ services:
     healthCheckPath: /health
     envVars:
       # Set in the Render dashboard, not here — it carries the Neon password.
-      # Use Neon's POOLED connection string: the free instance allows few direct
-      # connections, and a pool of web workers exhausts them quickly.
       - key: DATABASE_URL
         sync: false
       # Comma-separated. Must include the deployed Vercel origin or the browser

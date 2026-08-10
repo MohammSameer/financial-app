@@ -9,15 +9,24 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Load backend/.env before anything below reads the environment.
+# Load .env before anything below reads the environment.
 #
 # The field defaults in Settings are evaluated when this module is imported, so
-# this call has to happen first — after the class body has run it is too late.
+# this has to run first — once the class body has executed it is too late.
 #
-# override=False means a real environment variable always wins over the file,
-# which is what production needs: Render injects DATABASE_URL directly, and a
-# stray .env must never quietly replace it.
-load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
+# Two locations are checked, backend/ first and then the repo root, because
+# both are places people reasonably put the file. Silently ignoring a .env
+# sitting one directory away is a genuinely confusing failure: the app starts
+# fine and quietly talks to the wrong database.
+#
+# override=False on both: a real environment variable always wins. That is what
+# production needs — Render injects DATABASE_URL directly, and a stray .env
+# must never replace it. It also means backend/.env wins over the repo root,
+# since whichever loads first claims the key.
+_BACKEND_DIR = Path(__file__).resolve().parents[2]
+for _candidate in (_BACKEND_DIR / ".env", _BACKEND_DIR.parent / ".env"):
+    if _candidate.is_file():
+        load_dotenv(_candidate, override=False)
 
 
 def _csv(raw: str) -> list[str]:

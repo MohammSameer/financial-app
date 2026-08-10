@@ -31,6 +31,8 @@ def get_pool() -> ConnectionPool:
             conninfo=settings.database_url,
             min_size=settings.pool_min_size,
             max_size=settings.pool_max_size,
+            # Connections are autocommit by default; see get_cursor below.
+            kwargs={"autocommit": True},
             # Managed Postgres (Neon) drops idle connections; recycling well
             # before that avoids handing out a dead one.
             max_idle=120,
@@ -50,20 +52,23 @@ def close_pool() -> None:
 def get_cursor(*, commit: bool = False) -> Iterator:
     """Yield a dict-returning cursor.
 
-    Reads take the default (``commit=False``) and roll back, which costs nothing
-    and guarantees a read path can never leave a transaction half-open. Writes
-    pass ``commit=True`` and get all-or-nothing semantics across the whole block
-    — that is what makes the redeem flow atomic.
+    Connections are autocommit, so a plain read issues exactly one round trip:
+    the query. Previously every read opened a transaction and rolled it back,
+    which is free against a container on localhost but costs a second full
+    round trip against managed Postgres in another region — and the read paths
+    fire several queries per request, so it compounded.
+
+    Writes pass ``commit=True`` and run inside ``conn.transaction()``: a real
+    BEGIN, committed on a clean exit and rolled back on any exception. The
+    redeem flow's atomicity is unchanged — it is still all-or-nothing across
+    the whole block, which is what the optimistic UI rollback depends on.
     """
     pool = get_pool()
     with pool.connection() as conn:
-        with conn.cursor(row_factory=dict_row) as cur:
-            try:
+        if commit:
+            with conn.transaction():
+                with conn.cursor(row_factory=dict_row) as cur:
+                    yield cur
+        else:
+            with conn.cursor(row_factory=dict_row) as cur:
                 yield cur
-            except Exception:
-                conn.rollback()
-                raise
-            if commit:
-                conn.commit()
-            else:
-                conn.rollback()

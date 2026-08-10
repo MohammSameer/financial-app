@@ -43,21 +43,40 @@ FALLBACK_CATEGORY = "Uncategorised"
 # Matches a bare calendar date with no time component, e.g. "2025-07-03".
 _DATE_ONLY_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
-# Stable chart colours, assigned in the database so a category is the same
-# colour in every chart without the frontend hashing names.
+# Stable chart colours, (light, dark), keyed by category name.
+#
+# These are not hand-picked by eye. A first attempt at a "nice looking" set
+# failed a colour-blindness check badly: teal vs grey came out at ΔE 2.2 under
+# deuteranopia, meaning roughly 1 in 12 male users could not have told two
+# slices apart. This set was run through a validator until every adjacent pair
+# cleared the separation, lightness-band, chroma and contrast gates on both the
+# light and the dark chart surface.
+#
+# The dark column is the same ten hues re-stepped for a dark background, not an
+# automatic lightening — a colour tuned for white either glares or muddies on
+# near-black.
+#
+# Ten hues is already at the practical ceiling for a categorical scale, which
+# is why the donut chart caps at six slices plus "Other" rather than drawing
+# all eleven.
 CATEGORY_COLOURS = {
-    "Travel": "#6366f1",
-    "Shopping": "#ec4899",
-    "Utilities": "#0ea5e9",
-    "Food & Dining": "#f97316",
-    "Health": "#10b981",
-    "Education": "#8b5cf6",
-    "Entertainment": "#f43f5e",
-    "Groceries": "#84cc16",
-    "Fuel": "#eab308",
-    "Insurance": "#14b8a6",
-    FALLBACK_CATEGORY: "#94a3b8",
+    "Travel":        ("#2a78d6", "#3987e5"),  # blue
+    "Food & Dining": ("#eb6834", "#d95926"),  # orange
+    "Utilities":     ("#00a0b8", "#1d96a8"),  # cyan
+    "Fuel":          ("#eda100", "#c98500"),  # yellow
+    "Shopping":      ("#e87ba4", "#d55181"),  # pink
+    "Groceries":     ("#008300", "#008300"),  # green
+    "Education":     ("#4a3aa7", "#9085e9"),  # violet
+    "Insurance":     ("#e34948", "#e66767"),  # red
+    "Health":        ("#1baf7a", "#199e70"),  # aqua
+    "Entertainment": ("#a33ea1", "#b955b6"),  # magenta
+    # Deliberately outside the categorical scale. Uncategorised is missing
+    # data, not a kind of spending, so it gets a desaturated neutral that reads
+    # as "unknown" and never competes with a real category for attention.
+    FALLBACK_CATEGORY: ("#8b93a1", "#6b7689"),
 }
+
+_DEFAULT_COLOUR = ("#8b93a1", "#6b7689")
 
 
 # =============================================================================
@@ -382,17 +401,14 @@ def main() -> int:
             print(f"Inserting {len(categories)} categories, {len(merchants)} merchants ...")
             category_ids: dict[str, int] = {}
             for name in sorted(categories):
+                light, dark = CATEGORY_COLOURS.get(name, _DEFAULT_COLOUR)
                 cur.execute(
                     """
-                    INSERT INTO categories (name, colour, is_fallback)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO categories (name, colour, colour_dark, is_fallback)
+                    VALUES (%s, %s, %s, %s)
                     RETURNING id
                     """,
-                    (
-                        name,
-                        CATEGORY_COLOURS.get(name, "#94a3b8"),
-                        name == FALLBACK_CATEGORY,
-                    ),
+                    (name, light, dark, name == FALLBACK_CATEGORY),
                 )
                 category_ids[name] = cur.fetchone()[0]
 

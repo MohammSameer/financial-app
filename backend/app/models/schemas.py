@@ -1,4 +1,4 @@
-"""Response models.
+﻿"""Response models.
 
 These are the API contract. The frontend's TypeScript types mirror them, so a
 field renamed here is meant to be a visible, deliberate break rather than a
@@ -24,6 +24,7 @@ class Transaction(BaseModel):
     merchant: str
     category: str
     category_colour: str
+    category_colour_dark: str
     amount: Decimal
     currency: str
     status: str
@@ -78,6 +79,7 @@ class TransactionPage(BaseModel):
 class CategorySlice(BaseModel):
     category: str
     colour: str
+    colour_dark: str
     total: Decimal
     count: int
     # Share of the filtered total, 0-100, so the legend doesn't recompute it.
@@ -151,6 +153,7 @@ class FilterOption(BaseModel):
     label: str
     count: int
     colour: str | None = None
+    colour_dark: str | None = None
 
 
 class DataQuality(BaseModel):
@@ -175,3 +178,6 @@ class Meta(BaseModel):
     min_amount: Decimal | None
     max_amount: Decimal | None
     data_quality: DataQuality | None
+
+
+

@@ -1,4 +1,4 @@
-"""Filter metadata and data-quality reporting."""
+﻿"""Filter metadata and data-quality reporting."""
 
 from __future__ import annotations
 
@@ -22,6 +22,7 @@ def _options(rows: list[dict]) -> list[dict]:
             else row["value"],
             "count": int(row["count"]),
             "colour": row.get("colour"),
+            "colour_dark": row.get("colour_dark"),
         }
         for row in rows
     ]
@@ -60,3 +61,4 @@ def get_meta(user_id: int = Depends(current_user_id)) -> dict:
             else None
         ),
     }
+

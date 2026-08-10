@@ -1,4 +1,4 @@
-"""Data access for transactions. All transaction SQL lives here."""
+﻿"""Data access for transactions. All transaction SQL lives here."""
 
 from __future__ import annotations
 
@@ -20,7 +20,8 @@ _COLUMNS = """
     t.occurred_on,
     m.name   AS merchant,
     c.name   AS category,
-    c.colour AS category_colour,
+    c.colour      AS category_colour,
+    c.colour_dark AS category_colour_dark,
     t.amount,
     t.currency,
     t.status::text        AS status,
@@ -67,7 +68,7 @@ def fetch_totals(filters: TransactionFilters) -> dict:
     One pass with FILTER clauses rather than several round trips. "Spend"
     deliberately counts only positive, successful, non-outlier amounts: a
     refund is money returning, a failed payment never moved, and the
-    ₹99,99,99,999 row is a data error that would otherwise dominate every
+    â‚¹99,99,99,999 row is a data error that would otherwise dominate every
     total on the screen.
     """
     where, params = filters.build_where()
@@ -109,7 +110,7 @@ def fetch_by_id(user_id: int, transaction_id: int) -> dict | None:
     """Single row by our surrogate id.
 
     Keyed on the internal id, not external_id, precisely because external_id
-    is not unique in this dataset — looking up by it could return two rows.
+    is not unique in this dataset â€” looking up by it could return two rows.
     """
     sql = f"""
         SELECT {_COLUMNS}
@@ -137,3 +138,4 @@ def fetch_id_collision_siblings(user_id: int, external_id: str, exclude_id: int)
     with get_cursor() as cur:
         cur.execute(sql, [user_id, external_id, exclude_id])
         return cur.fetchall()
+

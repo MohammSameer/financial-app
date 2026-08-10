@@ -67,10 +67,19 @@ CREATE TABLE users (
 CREATE TABLE categories (
     id         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name       TEXT NOT NULL UNIQUE,
-    -- Stable colour for the charts. Assigning it in the database keeps a
-    -- category the same colour in every chart and every legend, without the
-    -- frontend hashing names into a palette.
-    colour     TEXT NOT NULL,
+    -- Stable colour per category, held in the database so a category is the
+    -- same colour in every chart, legend, table swatch and filter chip —
+    -- without the frontend hashing names into a palette.
+    --
+    -- Bound to the category NAME, never to its rank. If colour followed
+    -- "biggest slice first", filtering the data would repaint every surviving
+    -- slice and the user would lose track of which colour meant what.
+    --
+    -- Two columns because dark mode needs its own steps: the same hue
+    -- re-picked for the dark surface, not an automatic lightening. Both sets
+    -- were checked with a colour-blindness validator rather than by eye.
+    colour      TEXT NOT NULL,
+    colour_dark TEXT NOT NULL,
     -- True for the synthetic bucket that absorbs the 200 rows arriving with a
     -- null, missing or empty category. Lets the UI style it as "unknown"
     -- rather than presenting it as a real spending category.

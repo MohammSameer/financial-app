@@ -1,4 +1,4 @@
-"""Aggregate queries behind the charts.
+﻿"""Aggregate queries behind the charts.
 
 These take the same TransactionFilters as the table. That is the whole
 mechanism behind two-way cross-filtering: narrow the filters and the charts
@@ -33,12 +33,13 @@ def by_category(filters: TransactionFilters) -> list[dict]:
     sql = f"""
         SELECT
             c.name   AS category,
-            c.colour AS colour,
+            c.colour      AS colour,
+            c.colour_dark AS colour_dark,
             COALESCE(SUM(t.amount) FILTER (WHERE {_IS_SPEND}), 0) AS total,
             COUNT(*) FILTER (WHERE {_IS_SPEND})                   AS count
         {_FROM}
         WHERE {where}
-        GROUP BY c.name, c.colour
+        GROUP BY c.name, c.colour, c.colour_dark
         HAVING COUNT(*) FILTER (WHERE {_IS_SPEND}) > 0
         ORDER BY total DESC
     """
@@ -51,7 +52,7 @@ def by_month(filters: TransactionFilters) -> list[dict]:
     """Monthly spend and refunds.
 
     Months are IST calendar months (see the occurred_on column). The
-    ::timestamp cast matches the expression index built in schema.sql — drop it
+    ::timestamp cast matches the expression index built in schema.sql â€” drop it
     and the planner silently stops using that index.
     """
     where, params = filters.build_where()
@@ -70,3 +71,5 @@ def by_month(filters: TransactionFilters) -> list[dict]:
     with get_cursor() as cur:
         cur.execute(sql, params)
         return cur.fetchall()
+
+

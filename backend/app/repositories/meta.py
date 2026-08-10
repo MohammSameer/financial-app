@@ -1,4 +1,4 @@
-"""Everything the filter controls need to render, in one round trip."""
+﻿"""Everything the filter controls need to render, in one round trip."""
 
 from __future__ import annotations
 
@@ -10,15 +10,15 @@ def facets(user_id: int) -> dict:
 
     Counts are unfiltered on purpose. A facet list that shrinks as you filter
     makes it impossible to widen a selection again without clearing everything
-    first — the option you want to add has already vanished from the dropdown.
+    first â€” the option you want to add has already vanished from the dropdown.
     """
     with get_cursor() as cur:
         cur.execute(
             """
-            SELECT c.name AS value, c.colour, COUNT(t.id) AS count
+            SELECT c.name AS value, c.colour, c.colour_dark, COUNT(t.id) AS count
             FROM categories c
             LEFT JOIN transactions t ON t.category_id = c.id AND t.user_id = %s
-            GROUP BY c.name, c.colour, c.is_fallback
+            GROUP BY c.name, c.colour, c.colour_dark, c.is_fallback
             -- Uncategorised sorts last: it is a data artefact, not a category
             -- the user chose to spend in.
             ORDER BY c.is_fallback, COUNT(t.id) DESC
@@ -66,7 +66,7 @@ def facets(user_id: int) -> dict:
                 MAX(occurred_on) AS max_date,
                 MIN(amount)      AS min_amount,
                 -- The amount slider's upper bound ignores flagged outliers.
-                -- Anchoring it to ₹99,99,99,999 would push every real
+                -- Anchoring it to â‚¹99,99,99,999 would push every real
                 -- transaction into the leftmost pixel of the track.
                 MAX(amount) FILTER (WHERE NOT is_outlier) AS max_amount
             FROM transactions WHERE user_id = %s
@@ -93,3 +93,5 @@ def facets(user_id: int) -> dict:
         "bounds": bounds,
         "data_quality": data_quality,
     }
+
+

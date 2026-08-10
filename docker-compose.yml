@@ -1,0 +1,35 @@
+# Local Postgres for CoinStack.
+#
+# Published on 5544 rather than the default 5432 so it won't collide with a
+# Postgres you already have running. Change it here and in DATABASE_URL if
+# that port is taken too.
+name: coinstack
+
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: coinstack-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: coinstack
+      POSTGRES_PASSWORD: coinstack
+      POSTGRES_DB: coinstack
+    ports:
+      - "5544:5432"
+    volumes:
+      # PostgreSQL 18 changed this. The 18+ images store data in a
+      # major-version-specific subdirectory so that `pg_upgrade --link` works
+      # across a mount boundary, so the volume mounts at /var/lib/postgresql —
+      # NOT /var/lib/postgresql/data, which is what every pre-18 example shows.
+      # Mounting the old path makes the container crash-loop with
+      # "there appears to be PostgreSQL data in /var/lib/postgresql/data
+      # (unused mount/volume)".
+      - coinstack-pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coinstack -d coinstack"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  coinstack-pgdata:

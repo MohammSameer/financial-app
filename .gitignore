@@ -1,0 +1,36 @@
+# Assignment brief — confidential, not for a public repo
+some.pdf
+transactions (1).json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# Env
+.env
+.env.local
+.env*.local
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Postgres volume
+pgdata/
+
+# Written by the seed when rows fail normalisation; useful locally, not source.
+backend/data/rejected-rows.json

@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from app.api.deps import current_user_id
+from app.core.config import get_settings
 from app.models.schemas import Meta
 from app.repositories import meta as repo
 
@@ -39,6 +40,7 @@ def get_meta(user_id: int = Depends(current_user_id)) -> dict:
     data = repo.facets(user_id)
     bounds = data["bounds"] or {}
     dq = data["data_quality"]
+    settings = get_settings()
 
     return {
         "categories": _options(data["categories"]),
@@ -60,5 +62,11 @@ def get_meta(user_id: int = Depends(current_user_id)) -> dict:
             if dq
             else None
         ),
+        # Served, not duplicated in the UI copy. Changing COIN_CAP_PER_TXN now
+        # updates what the app tells the user, in step with what it awards.
+        "coin_rules": {
+            "rupees_per_coin": settings.coin_rupees_per_coin,
+            "cap_per_txn": settings.coin_cap_per_txn,
+        },
     }
 

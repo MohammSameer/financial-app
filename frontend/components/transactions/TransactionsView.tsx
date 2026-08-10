@@ -10,7 +10,6 @@ import { Card } from "@/components/ui/Card";
 import { Table, type Column } from "@/components/ui/Table";
 import { api, toQuery } from "@/lib/api";
 import {
-  DEFAULT_FILTERS,
   activeFilterCount,
   parseFilters,
   serialiseFilters,
@@ -20,6 +19,7 @@ import {
   type SortKey,
 } from "@/lib/filters";
 import { formatCoins, formatDate, formatINR } from "@/lib/format";
+import { useMeta } from "@/lib/MetaContext";
 import { useApi } from "@/lib/useApi";
 import { useDebounce } from "@/lib/useDebounce";
 import { useTheme } from "@/lib/useTheme";
@@ -95,7 +95,10 @@ export function TransactionsView() {
     analyticsQuery,
   );
 
-  const meta = useApi((signal) => api.meta(signal), "meta");
+  // Shared with the rest of the app rather than fetched again here — the
+  // rewards page needs the same coin rules, and the facets don't change while
+  // the page is open.
+  const { meta } = useMeta();
 
   // ---- Interactions -------------------------------------------------------
   const toggleCategory = useCallback(
@@ -228,7 +231,7 @@ export function TransactionsView() {
   );
 
   const filtered = activeFilterCount(effectiveFilters) > 0;
-  const dq = meta.data?.data_quality;
+  const dq = meta?.data_quality;
 
   return (
     <>
@@ -236,8 +239,8 @@ export function TransactionsView() {
         <div>
           <h1 className={pageStyles.title}>Your spending</h1>
           <p className={pageStyles.subtitle}>
-            {DEFAULT_FILTERS.pageSize && meta.data?.min_date
-              ? `${meta.data.min_date} to ${meta.data.max_date}`
+            {meta?.min_date
+              ? `${meta.min_date} to ${meta.max_date}`
               : "Every payment, filtered how you like."}
           </p>
         </div>
@@ -325,7 +328,7 @@ export function TransactionsView() {
 
       <FilterBar
         filters={effectiveFilters}
-        meta={meta.data ?? undefined}
+        meta={meta ?? undefined}
         resultCount={transactions.data?.meta.total}
         searchDraft={searchDraft}
         onSearchDraft={setSearchDraft}

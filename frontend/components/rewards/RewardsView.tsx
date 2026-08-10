@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/Toast";
 import { ApiError, api } from "@/lib/api";
 import { useBalance } from "@/lib/BalanceContext";
 import { formatCoins, formatDateTime, formatINR } from "@/lib/format";
+import { useMeta } from "@/lib/MetaContext";
 import { useApi } from "@/lib/useApi";
 import type { Reward } from "@/lib/types";
 import styles from "./Rewards.module.css";
@@ -18,6 +19,7 @@ type FlowState = "idle" | "confirming" | "working" | "done";
 
 export function RewardsView() {
   const { balance, loading: balanceLoading, redeem } = useBalance();
+  const { coinRules } = useMeta();
   const { push } = useToast();
 
   const [selected, setSelected] = useState<Reward | null>(null);
@@ -119,7 +121,9 @@ export function RewardsView() {
             <span className={styles.heroUnit}>coins</span>
           </div>
           <p className={styles.heroMeta}>
-            Earned at 1 coin per ₹100 on successful payments, up to 50 coins each.
+            Earned at 1 coin per ₹
+            {coinRules.rupees_per_coin.toLocaleString("en-IN")} on successful
+            payments, up to {formatCoins(coinRules.cap_per_txn)} coins each.
           </p>
         </div>
 

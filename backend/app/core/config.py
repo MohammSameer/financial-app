@@ -5,6 +5,19 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from functools import lru_cache
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load backend/.env before anything below reads the environment.
+#
+# The field defaults in Settings are evaluated when this module is imported, so
+# this call has to happen first — after the class body has run it is too late.
+#
+# override=False means a real environment variable always wins over the file,
+# which is what production needs: Render injects DATABASE_URL directly, and a
+# stray .env must never quietly replace it.
+load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
 
 
 def _csv(raw: str) -> list[str]:

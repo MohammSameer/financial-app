@@ -6,6 +6,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { api } from "@/lib/api";
 import { formatCoins, formatDateTime, formatINR } from "@/lib/format";
+import { useMeta } from "@/lib/MetaContext";
 import { useApi } from "@/lib/useApi";
 import { useTheme } from "@/lib/useTheme";
 import type { Transaction } from "@/lib/types";
@@ -25,6 +26,7 @@ interface Props {
  */
 export function TransactionDrawer({ transactionId, onClose }: Props) {
   const theme = useTheme();
+  const { coinRules } = useMeta();
 
   const fetcher = useCallback(
     (signal: AbortSignal) => api.transaction(transactionId!, signal),
@@ -95,7 +97,7 @@ export function TransactionDrawer({ transactionId, onClose }: Props) {
                     ? "refunds don't earn coins"
                     : txn.is_outlier
                       ? "amount is flagged as a data error"
-                      : "below the ₹100 minimum"}
+                      : `below the ₹${coinRules.rupees_per_coin.toLocaleString("en-IN")} minimum`}
               </span>
             )}
           </div>

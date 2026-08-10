@@ -166,6 +166,19 @@ class DataQuality(BaseModel):
     ran_at: datetime
 
 
+class CoinRules(BaseModel):
+    """The earn rule, served rather than duplicated in the UI.
+
+    The frontend has to tell the user how coins are earned, and the only
+    correct source for that is the same config the backend awards them from.
+    Hardcoding "capped at 50" in the copy means changing the cap silently turns
+    the interface into a liar.
+    """
+
+    rupees_per_coin: int
+    cap_per_txn: int
+
+
 class Meta(BaseModel):
     """Everything the filter controls need, in one request."""
 
@@ -178,6 +191,7 @@ class Meta(BaseModel):
     min_amount: Decimal | None
     max_amount: Decimal | None
     data_quality: DataQuality | None
+    coin_rules: CoinRules
 
 
 

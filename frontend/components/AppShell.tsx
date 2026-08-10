@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { BalanceProvider } from "@/lib/BalanceContext";
+import { MetaProvider } from "@/lib/MetaContext";
 import { useTheme } from "@/lib/useTheme";
 import { CoinPill } from "./CoinPill";
 import { ToastProvider } from "./ui/Toast";
@@ -74,7 +75,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <ToastProvider>
-      <BalanceProvider>
+      <MetaProvider>
+        <BalanceProvider>
         <div className={styles.shell}>
           {/* First tab stop on the page, so a keyboard user can jump the
               filter bar and land on the table. */}
@@ -126,8 +128,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <footer className={styles.footer}>
             CoinStack · built for the Digital Alpha take-home · data is synthetic
           </footer>
-        </div>
-      </BalanceProvider>
+          </div>
+        </BalanceProvider>
+      </MetaProvider>
     </ToastProvider>
   );
 }

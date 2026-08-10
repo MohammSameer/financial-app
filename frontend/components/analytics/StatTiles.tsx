@@ -2,6 +2,7 @@
 
 import { Skeleton } from "@/components/ui/Skeleton";
 import { formatCoins, formatINR, formatNumber } from "@/lib/format";
+import { describeCoinRule, useMeta } from "@/lib/MetaContext";
 import type { TransactionTotals } from "@/lib/types";
 import styles from "./StatTiles.module.css";
 
@@ -23,6 +24,10 @@ interface Props {
  * spend" for one page of a 10,000-row result.
  */
 export function StatTiles({ totals, loading, filtered }: Props) {
+  // The earn rule comes from the server, not from copy typed into this file —
+  // changing the cap must change what the app says, not just what it awards.
+  const { coinRules } = useMeta();
+
   if (loading && !totals) {
     return (
       <div className={styles.grid}>
@@ -78,7 +83,7 @@ export function StatTiles({ totals, loading, filtered }: Props) {
         <span className={`${styles.value} ${styles.valueCoin}`}>
           {formatCoins(totals.coins_earned)}
         </span>
-        <span className={styles.meta}>1 coin per ₹100, capped at 50</span>
+        <span className={styles.meta}>{describeCoinRule(coinRules)}</span>
       </div>
     </div>
   );

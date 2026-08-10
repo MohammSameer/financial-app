@@ -144,6 +144,12 @@ export interface DataQuality {
   ran_at: string;
 }
 
+/** The coin earn rule, served so the UI can't drift from what's awarded. */
+export interface CoinRules {
+  rupees_per_coin: number;
+  cap_per_txn: number;
+}
+
 export interface Meta {
   categories: FilterOption[];
   merchants: FilterOption[];
@@ -154,6 +160,7 @@ export interface Meta {
   min_amount: string | null;
   max_amount: string | null;
   data_quality: DataQuality | null;
+  coin_rules: CoinRules;
 }
 
 /** Error body shape from the backend's DomainError handler. */
